@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/login';
 import Dashboard from './pages/Dashboard';
-import Layout from './components/Layout';
+import Layout from './components/layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/globals.css';
 
