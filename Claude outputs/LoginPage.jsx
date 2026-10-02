@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login } from '../utils/authUtils';
+import { login } from './utils/authUtils';
 
 function LoginPage({ onLoginSuccess }) {
   const [email, setEmail] = useState('kelly.olin@eXpRealty.com');

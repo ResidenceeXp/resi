@@ -2,36 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { mockTransactions } from '../data/mockTransactions';
 import { mockTasks, getTasksByAssignee } from '../data/mockTasks';
 
-function AgentDashboard({ currentUser }) {
-  const [metrics, setMetrics] = useState({
-    activeListings: 0,
-    activeBuyers: 0,
-    closedThisMonth: 0,
-    pendingTasks: 0,
-  });
-  const [tasks, setTasks] = useState([]);
+function TCDashboard({ currentUser }) {
   const [transactions, setTransactions] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [metrics, setMetrics] = useState({
+    skyslope: 0,
+    mls: 0,
+    pendingDeadlines: 0,
+    completedTasks: 0,
+  });
 
   useEffect(() => {
-    // Get agent's tasks
-    const agentTasks = getTasksByAssignee(currentUser.id);
-    setTasks(agentTasks);
+    // Get all active transactions (TC manages all)
+    const allTransactions = mockTransactions.filter(
+      t => t.status === 'pending' || t.status === 'under-contract' || t.status === 'listing-active'
+    );
+    setTransactions(allTransactions);
 
-    // Get agent's transactions
-    const agentTransactions = mockTransactions.filter(t => t.agentId === currentUser.id);
-    setTransactions(agentTransactions);
+    // Get TC's tasks
+    const tcTasks = getTasksByAssignee(currentUser.id);
+    setTasks(tcTasks);
 
     // Calculate metrics
-    const activeListing = agentTransactions.filter(t => t.type === 'seller-listing' && t.status === 'listing-active').length;
-    const activeBuyer = agentTransactions.filter(t => t.type === 'buyer' && t.status === 'under-contract').length;
-    const closedMonth = agentTransactions.filter(t => t.status === 'closed').length;
-    const pendingCount = agentTasks.filter(t => t.status === 'pending').length;
+    const skyslopeTaskCount = tcTasks.filter(t => t.type === 'enter-skyslope').length;
+    const mlsTaskCount = tcTasks.filter(t => t.type === 'enter-mls').length;
+    const pendingCount = tcTasks.filter(t => t.status === 'pending').length;
+    const completedCount = tcTasks.filter(t => t.status === 'completed').length;
 
     setMetrics({
-      activeListings: activeListing,
-      activeBuyers: activeBuyer,
-      closedThisMonth: closedMonth,
-      pendingTasks: pendingCount,
+      skyslope: skyslopeTaskCount,
+      mls: mlsTaskCount,
+      pendingDeadlines: pendingCount,
+      completedTasks: completedCount,
     });
   }, [currentUser]);
 
@@ -40,7 +42,6 @@ function AgentDashboard({ currentUser }) {
       case 'pending': return '#95a5a6';
       case 'under-contract': return '#f39c12';
       case 'listing-active': return '#e74c3c';
-      case 'closed': return '#27ae60';
       default: return '#95a5a6';
     }
   };
@@ -56,7 +57,7 @@ function AgentDashboard({ currentUser }) {
           Welcome, {currentUser.firstName}!
         </h1>
         <p style={{ margin: 0, color: '#7f8c8d' }}>
-          Agent Dashboard - Your Active Transactions & Tasks
+          Transaction Coordinator Dashboard
         </p>
       </div>
 
@@ -76,10 +77,10 @@ function AgentDashboard({ currentUser }) {
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         }}>
           <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-            {metrics.activeListings}
+            {metrics.skyslope}
           </div>
           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-            Active Listings
+            Skyslope Entries
           </div>
         </div>
 
@@ -92,10 +93,10 @@ function AgentDashboard({ currentUser }) {
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         }}>
           <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-            {metrics.activeBuyers}
+            {metrics.mls}
           </div>
           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-            Active Buyers
+            MLS Entries
           </div>
         </div>
 
@@ -108,10 +109,10 @@ function AgentDashboard({ currentUser }) {
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         }}>
           <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-            {metrics.closedThisMonth}
+            {metrics.pendingDeadlines}
           </div>
           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-            Closed This Month
+            Pending Tasks
           </div>
         </div>
 
@@ -124,10 +125,10 @@ function AgentDashboard({ currentUser }) {
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         }}>
           <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-            {metrics.pendingTasks}
+            {metrics.completedTasks}
           </div>
           <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-            Pending Tasks
+            Completed Tasks
           </div>
         </div>
       </div>
@@ -173,8 +174,8 @@ function AgentDashboard({ currentUser }) {
                     {t.propertyAddress}
                   </div>
                   <div style={{ fontSize: '0.85rem', color: '#7f8c8d', marginBottom: '0.5rem' }}>
-                    <div>{t.type === 'buyer' ? 'Buyer' : 'Seller'}</div>
-                    <div>Price: ${t.price ? t.price.toLocaleString() : 'TBD'}</div>
+                    <span style={{ marginRight: '1rem' }}>Type: {t.type}</span>
+                    <span>Agent: {t.agent}</span>
                   </div>
                   <div style={{
                     fontSize: '0.85rem',
@@ -183,6 +184,7 @@ function AgentDashboard({ currentUser }) {
                     backgroundColor: getStatusColor(t.status),
                     padding: '0.3rem 0.6rem',
                     borderRadius: '3px',
+                    textTransform: 'capitalize',
                   }}>
                     {t.status}
                   </div>
@@ -209,7 +211,7 @@ function AgentDashboard({ currentUser }) {
             borderBottom: '2px solid #f0f0f0',
             paddingBottom: '1rem',
           }}>
-            My Tasks
+            My Pending Tasks
           </h2>
 
           <div style={{
@@ -221,13 +223,13 @@ function AgentDashboard({ currentUser }) {
               tasks
                 .filter(t => t.status === 'pending')
                 .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-                .slice(0, 5)
+                .slice(0, 8)
                 .map(task => (
                   <div
                     key={task.id}
                     style={{
                       padding: '1rem',
-                      backgroundColor: '#fffacd',
+                      backgroundColor: '#f8f9fa',
                       borderLeft: '4px solid #f39c12',
                       borderRadius: '4px',
                     }}
@@ -252,4 +254,4 @@ function AgentDashboard({ currentUser }) {
   );
 }
 
-export default AgentDashboard;
+export default TCDashboard;
