@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Home, DollarSign, Clock, TrendingUp } from 'lucide-react';
+import { Home, DollarSign, Clock, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import '../styles/dashboard.css';
 
