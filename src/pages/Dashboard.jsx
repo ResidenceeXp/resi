@@ -1,194 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { Home, DollarSign, Clock, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import '../styles/dashboard.css';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, Send, CheckSquare, Bell, Users } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-function Dashboard({ currentUser }) {
-  const [stats, setStats] = useState(null);
-  const [recentListings, setRecentListings] = useState([]);
-  const [recentTransactions, setRecentTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const { user, userRole, logout } = useAuth();
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const headers = {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        };
-
-        // Fetch dashboard stats
-        const statsResponse = await fetch('/api/dashboard/stats', { headers });
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json();
-          setStats(statsData);
-        }
-
-        // Fetch recent listings
-        const listingsResponse = await fetch('/api/listings/recent', { headers });
-        if (listingsResponse.ok) {
-          const listingsData = await listingsResponse.json();
-          setRecentListings(listingsData);
-        }
-
-        // Fetch recent transactions
-        const transactionsResponse = await fetch('/api/transactions/recent', { headers });
-        if (transactionsResponse.ok) {
-          const transactionsData = await transactionsResponse.json();
-          setRecentTransactions(transactionsData);
-        }
-      } catch (err) {
-        console.error('Dashboard data fetch error:', err);
-        setError('Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
-
-  if (loading) {
-    return <div className="dashboard-loading">Loading your dashboard...</div>;
-  }
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>Welcome, {currentUser?.first_name}!</h1>
-        <p className="dashboard-date">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </p>
-      </div>
-
-      {error && <div className="error-banner">{error}</div>}
-
-      {/* Key Metrics */}
-      <div className="metrics-grid">
-        <div className="metric-card">
-          <div className="metric-icon open-deals">
-            <Home size={24} />
-          </div>
-          <div className="metric-content">
-            <p className="metric-label">Open Deals</p>
-            <p className="metric-value">{stats?.openDeals || 0}</p>
-            <p className="metric-subtitle">Live & Under Contract</p>
-          </div>
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.headerLeft}>
+          <h1 style={styles.title}>RESIDENCE</h1>
         </div>
-
-        <div className="metric-card">
-          <div className="metric-icon pending-commission">
-            <DollarSign size={24} />
+        <div style={styles.headerRight}>
+          <div style={styles.userInfo}>
+            <span style={styles.email}>{user?.email}</span>
+            <span style={styles.roleBadge}>{userRole}</span>
           </div>
-          <div className="metric-content">
-            <p className="metric-label">Pending Commission</p>
-            <p className="metric-value">
-              {stats?.pendingCommission ? `$${stats.pendingCommission.toLocaleString()}` : '$0'}
-            </p>
-            <p className="metric-subtitle">Under contract</p>
-          </div>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-icon live-listings">
-            <TrendingUp size={24} />
-          </div>
-          <div className="metric-content">
-            <p className="metric-label">Live Listings</p>
-            <p className="metric-value">{stats?.liveListings || 0}</p>
-            <p className="metric-subtitle">Active on MLS</p>
-          </div>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-icon pending-tasks">
-            <Clock size={24} />
-          </div>
-          <div className="metric-content">
-            <p className="metric-label">Pending Tasks</p>
-            <p className="metric-value">{stats?.pendingTasks || 0}</p>
-            <p className="metric-subtitle">Due soon</p>
-          </div>
+          <button onClick={handleLogout} style={styles.logoutButton}>
+            <LogOut size={18} />
+            Logout
+          </button>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        <h2>Quick Actions</h2>
-        <div className="action-buttons">
-          <Link to="/new-listing" className="action-btn new-listing">
-            <Home size={18} />
-            New Seller Listing
-          </Link>
-          <Link to="/new-landlord-listing" className="action-btn new-rental">
-            <Home size={18} />
-            New Rental Listing
-          </Link>
-          <Link to="/tasks" className="action-btn view-tasks">
-            <Clock size={18} />
-            View Tasks
-          </Link>
-          <Link to="/commissions" className="action-btn view-commissions">
-            <DollarSign size={18} />
-            Commission Dashboard
-          </Link>
-        </div>
-      </div>
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        <h2 style={styles.sectionTitle}>Dashboard</h2>
+        <p style={styles.sectionSubtitle}>Welcome back, {user?.email}</p>
 
-      {/* Recent Activity */}
-      <div className="recent-activity">
-        <div className="activity-section">
-          <h2>Recent Listings</h2>
-          {recentListings.length > 0 ? (
-            <div className="activity-list">
-              {recentListings.slice(0, 5).map(listing => (
-                <div key={listing.id} className="activity-item">
-                  <div className="activity-main">
-                    <p className="activity-title">{listing.address_1}</p>
-                    <p className="activity-subtitle">
-                      ${listing.list_price?.toLocaleString()} • {listing.status}
-                    </p>
-                  </div>
-                  <p className="activity-date">
-                    {new Date(listing.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
+        <div style={styles.cardsGrid}>
+          <div style={styles.card} onClick={() => navigate('/transactions')}>
+            <Send size={32} style={styles.cardIcon} />
+            <h3 style={styles.cardTitle}>Transactions</h3>
+            <p style={styles.cardDescription}>Manage your transactions</p>
+          </div>
+
+          <div style={styles.card}>
+            <CheckSquare size={32} style={styles.cardIcon} />
+            <h3 style={styles.cardTitle}>Checklists</h3>
+            <p style={styles.cardDescription}>Track action items</p>
+          </div>
+
+          <div style={styles.card}>
+            <Bell size={32} style={styles.cardIcon} />
+            <h3 style={styles.cardTitle}>Notifications</h3>
+            <p style={styles.cardDescription}>View notifications</p>
+          </div>
+
+          {userRole === 'Admin' && (
+            <div style={styles.card} onClick={() => navigate('/admin')}>
+              <Users size={32} style={styles.cardIcon} />
+              <h3 style={styles.cardTitle}>User Management</h3>
+              <p style={styles.cardDescription}>Manage team members</p>
             </div>
-          ) : (
-            <p className="empty-state">No recent listings</p>
-          )}
-        </div>
-
-        <div className="activity-section">
-          <h2>Recent Transactions</h2>
-          {recentTransactions.length > 0 ? (
-            <div className="activity-list">
-              {recentTransactions.slice(0, 5).map(transaction => (
-                <div key={transaction.id} className="activity-item">
-                  <div className="activity-main">
-                    <p className="activity-title">
-                      {transaction.address_1} - Under Contract
-                    </p>
-                    <p className="activity-subtitle">
-                      Buyer: {transaction.buyer_first_name} {transaction.buyer_last_name}
-                    </p>
-                  </div>
-                  <p className="activity-date">
-                    {new Date(transaction.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="empty-state">No recent transactions</p>
           )}
         </div>
       </div>
@@ -196,4 +68,111 @@ function Dashboard({ currentUser }) {
   );
 }
 
-export default Dashboard;
+const styles = {
+  container: {
+    minHeight: '100vh',
+    backgroundColor: '#000000',
+    color: '#FFFFFF'
+  },
+  header: {
+    backgroundColor: '#1a1a1a',
+    borderBottom: '2px solid #D4AF37',
+    padding: '20px 40px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  headerLeft: {
+    flex: 1
+  },
+  title: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    margin: '0',
+    letterSpacing: '2px',
+    color: '#D4AF37'
+  },
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '20px'
+  },
+  userInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: '4px'
+  },
+  email: {
+    fontSize: '14px',
+    color: '#FFFFFF'
+  },
+  roleBadge: {
+    fontSize: '12px',
+    backgroundColor: '#D4AF37',
+    color: '#000000',
+    padding: '4px 12px',
+    borderRadius: '12px',
+    fontWeight: '600'
+  },
+  logoutButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    backgroundColor: 'transparent',
+    color: '#D4AF37',
+    border: '1px solid #D4AF37',
+    padding: '10px 16px',
+    borderRadius: '4px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: 'all 0.3s ease'
+  },
+  mainContent: {
+    padding: '40px'
+  },
+  sectionTitle: {
+    fontSize: '28px',
+    fontWeight: 'bold',
+    margin: '0 0 8px 0',
+    color: '#FFFFFF'
+  },
+  sectionSubtitle: {
+    fontSize: '14px',
+    color: '#999999',
+    margin: '0 0 32px 0'
+  },
+  cardsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '20px'
+  },
+  card: {
+    backgroundColor: '#1a1a1a',
+    border: '1px solid #333333',
+    borderRadius: '8px',
+    padding: '32px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  },
+  cardIcon: {
+    color: '#D4AF37',
+    marginBottom: '16px'
+  },
+  cardTitle: {
+    fontSize: '18px',
+    fontWeight: '600',
+    margin: '0 0 8px 0',
+    color: '#FFFFFF'
+  },
+  cardDescription: {
+    fontSize: '14px',
+    color: '#999999',
+    margin: '0'
+  }
+};
