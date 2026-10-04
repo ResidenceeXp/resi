@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import AppHeader from './components/AppHeader';
 import Login from './pages/login';
 import Dashboard from './pages/Dashboard';
 import Layout from './components/layout';
@@ -57,6 +58,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <AppHeader />
       <Routes>
         <Route
           path="/login"
