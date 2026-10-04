@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { getCurrentUser, logout } from './utils/authUtils';
+import AppHeader from './components/AppHeader';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -84,6 +85,7 @@ function App() {
 
   return (
     <Router>
+      <AppHeader />
       <div style={{ display: 'flex', minHeight: '100vh' }}>
         {/* Sidebar Navigation */}
         <nav style={{
