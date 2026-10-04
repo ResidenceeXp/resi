@@ -3,14 +3,14 @@ import { getAuth } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAuoHQBAJMzh-zj9Gffj98LjjVGLsuRFfU",
+  apiKey: "AIzaSyAuoHQBJAMzH-zj9GfFj98LjjVGLsuRFFU",
   authDomain: "resi-3b5fe.firebaseapp.com",
+  databaseURL: "https://resi-3b5fe-default-rtdb.firebaseio.com",
   projectId: "resi-3b5fe",
   storageBucket: "resi-3b5fe.firebasestorage.app",
-  messagingSenderId: "81651885393983",
-  appId: "1:81651885393983:web:07befea24b19c621623ea",
-  measurementId: "G-TB4H49TWM1",
-  databaseURL: "https://resi-3b5fe-default-rtdb.firebaseio.com"
+  messagingSenderId: "816518853983",
+  appId: "1:816518853983:web:07befea24b19c6216232ea",
+  measurementId: "G-TB4H49TWM1"
 };
 
 const app = initializeApp(firebaseConfig);
