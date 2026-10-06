@@ -10,7 +10,7 @@
 .app-header__container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -25,30 +25,9 @@
 }
 
 .app-header__logo {
-  height: 40px;
+  height: 45px;
   width: auto;
   object-fit: contain;
-}
-
-.app-header__title {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.app-header__title h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary, #1f2937);
-  letter-spacing: -0.01em;
-}
-
-.app-header__title p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--text-secondary, #6b7280);
-  font-weight: 400;
 }
 
 .app-header__actions {
@@ -60,20 +39,12 @@
 
 @media (max-width: 768px) {
   .app-header__container {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
     gap: 1rem;
   }
 
   .app-header__logo {
-    height: 32px;
-  }
-
-  .app-header__title h1 {
-    font-size: 1.25rem;
-  }
-
-  .app-header__title p {
-    display: none;
+    height: 36px;
   }
 }
 
@@ -83,10 +54,6 @@
   }
 
   .app-header__logo {
-    height: 28px;
-  }
-
-  .app-header__title h1 {
-    font-size: 1.125rem;
+    height: 32px;
   }
 }

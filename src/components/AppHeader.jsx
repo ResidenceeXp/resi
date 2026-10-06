@@ -7,16 +7,19 @@ const AppHeader = () => {
     <header className="app-header">
       <div className="app-header__container">
         <div className="app-header__logo-section">
-          {/* Resi Logo - uses the image in public/residence-logo.png */}
-          <img
-            src="/residence-logo.png"
-            alt="Resi - RESIDENCE | eXp Realty"
+          {/* RESIDENCE | eXp Logo - inline SVG */}
+          <svg
+            viewBox="0 0 200 200"
             className="app-header__logo"
-          />
-          <div className="app-header__title">
-            <h1>Resi</h1>
-            <p>Transaction Management</p>
-          </div>
+            aria-label="RESIDENCE | eXp Realty"
+          >
+            <rect x="20" y="20" width="160" height="160" fill="none" stroke="#d4af37" strokeWidth="3" rx="8" />
+            <circle cx="100" cy="100" r="45" fill="#d4af37" opacity="0.2" />
+            <circle cx="100" cy="100" r="25" fill="#d4af37" />
+            <text x="100" y="110" textAnchor="middle" fill="#fff" fontSize="16" fontWeight="bold" fontFamily="Roboto, sans-serif">
+              R
+            </text>
+          </svg>
         </div>
 
         <div className="app-header__actions">

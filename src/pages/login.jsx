@@ -1,96 +1,116 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { Mail, Lock } from 'lucide-react';
+import { getLogoBooleanTheme } from '../utils/themeUtils';
 
 export default function Login() {
-  const navigate = useNavigate();
-  const { login, error, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [localError, setLocalError] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLocalError('');
+    setError('');
+    setLoading(true);
+
     try {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setLocalError(err.message || 'Login failed');
+      setError(err.message || 'Failed to log in');
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Light theme for login page
+  const logoSrc = '/resi-logo.png';
+
   return (
     <div style={styles.container}>
-      {/* Top gold bar */}
-      <div style={styles.topBar}></div>
-
-      {/* Main content */}
-      <div style={styles.content}>
-        <div style={styles.logoSection}>
-          <div style={styles.logo}>R</div>
-          <h1 style={styles.title}>RESIDENCE</h1>
-        </div>
-
-        <div style={styles.formCard}>
-          <h2 style={styles.formTitle}>Transaction Management</h2>
-          <p style={styles.formSubtitle}>Sign in to your account</p>
-
-          <form onSubmit={handleLogin} style={styles.form}>
-            {(localError || error) && (
-              <div style={styles.errorBox}>
-                <p style={styles.errorText}>{localError || error}</p>
-              </div>
-            )}
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Email Address</label>
-              <div style={styles.inputWrapper}>
-                <Mail size={18} style={styles.icon} />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  style={styles.input}
-                />
-              </div>
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Password</label>
-              <div style={styles.inputWrapper}>
-                <Lock size={18} style={styles.icon} />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  style={styles.input}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                ...styles.submitButton,
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
-        </div>
+      <div style={styles.logoContainer}>
+        <img src={logoSrc} alt="Resi" style={styles.topLogo} />
       </div>
 
-      {/* Bottom gold bar */}
-      <div style={styles.bottomBar}></div>
+      <div style={styles.loginBox}>
+        {/* Team Logo Section */}
+        <div style={styles.logoSection}>
+          <img src="/residence-exp-logo.png" alt="RESIDENCE | eXp Realty" style={styles.teamLogoImage} />
+        </div>
+
+        {/* Form Header */}
+        <div style={styles.formHeader}>
+          <h1 style={styles.formTitle}>Let's get to work</h1>
+          <p style={styles.formSubtitle}>Sign in to your account</p>
+        </div>
+
+        {/* Login Form */}
+        <form onSubmit={handleLogin} style={styles.form}>
+          {error && (
+            <div style={styles.errorBox}>
+              <p style={styles.errorText}>{error}</p>
+            </div>
+          )}
+
+          {/* Email Input */}
+          <div style={styles.formGroup}>
+            <label style={styles.label}>EMAIL ADDRESS</label>
+            <div style={styles.inputWrapper}>
+              <Mail size={18} style={styles.icon} />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your.email@example.com"
+                required
+                style={styles.input}
+              />
+            </div>
+          </div>
+
+          {/* Password Input */}
+          <div style={styles.formGroup}>
+            <label style={styles.label}>PASSWORD</label>
+            <div style={styles.inputWrapper}>
+              <Lock size={18} style={styles.icon} />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                style={styles.input}
+              />
+            </div>
+          </div>
+
+          {/* Login Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              ...styles.loginButton,
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loading ? 'Logging in...' : 'Sign In'}
+          </button>
+        </form>
+
+        {/* Footer Info */}
+        <p style={styles.footer}>
+          For access, contact your administrator.
+        </p>
+      </div>
+
+      {/* Gold accent bars */}
+      <div style={styles.accentTop}></div>
+      <div style={styles.accentBottom}></div>
     </div>
   );
 }
@@ -98,135 +118,158 @@ export default function Login() {
 const styles = {
   container: {
     minHeight: '100vh',
-    backgroundColor: '#000000',
-    color: '#FFFFFF',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  topBar: {
-    height: '4px',
-    backgroundColor: '#D4AF37'
-  },
-  content: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '40px 20px'
-  },
-  logoSection: {
+    backgroundColor: '#FFFFFF',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: '40px'
-  },
-  logo: {
-    width: '80px',
-    height: '80px',
-    backgroundColor: '#1a1a1a',
-    border: '2px solid #D4AF37',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '48px',
-    fontWeight: 'bold',
-    color: '#D4AF37',
-    marginBottom: '20px'
+    position: 'relative',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    overflow: 'hidden',
+    padding: '20px'
   },
-  title: {
-    fontSize: '32px',
-    fontWeight: 'bold',
-    margin: '0',
-    letterSpacing: '3px',
-    color: '#D4AF37'
+  logoContainer: {
+    marginBottom: '40px',
+    textAlign: 'center'
   },
-  formCard: {
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #333333',
-    borderRadius: '8px',
-    padding: '40px',
+  topLogo: {
+    maxWidth: '280px',
+    height: 'auto'
+  },
+  loginBox: {
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #F0F0F0',
+    borderRadius: '4px',
+    padding: '48px 40px',
     width: '100%',
-    maxWidth: '400px'
+    maxWidth: '420px',
+    boxShadow: 'none',
+    position: 'relative',
+    zIndex: 1
+  },
+  formHeader: {
+    marginBottom: '32px',
+    textAlign: 'center'
   },
   formTitle: {
-    fontSize: '24px',
+    fontSize: '28px',
     fontWeight: '600',
+    color: '#000000',
     margin: '0 0 8px 0',
-    color: '#FFFFFF'
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    letterSpacing: '-0.5px'
   },
   formSubtitle: {
     fontSize: '14px',
     color: '#999999',
-    margin: '0 0 24px 0'
+    margin: '0',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontWeight: '400'
+  },
+  logoSection: {
+    textAlign: 'center',
+    marginBottom: '32px'
+  },
+  logoImage: {
+    maxWidth: '80px',
+    height: 'auto',
+    marginBottom: '0'
+  },
+  teamLogoImage: {
+    maxWidth: '280px',
+    height: 'auto',
+    marginBottom: '0'
   },
   form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px'
+    marginBottom: '32px'
   },
   formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
+    marginBottom: '24px'
   },
   label: {
+    display: 'block',
     fontSize: '12px',
     fontWeight: '600',
-    color: '#D4AF37',
+    color: '#d4af37',
+    marginBottom: '8px',
     letterSpacing: '0.5px',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   inputWrapper: {
+    position: 'relative',
     display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    backgroundColor: '#0a0a0a',
-    border: '1px solid #333333',
-    borderRadius: '4px',
-    padding: '12px'
+    alignItems: 'center'
   },
   icon: {
-    color: '#D4AF37',
-    flexShrink: 0
+    position: 'absolute',
+    left: '12px',
+    color: '#d4af37',
+    pointerEvents: 'none'
   },
   input: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#FFFFFF',
+    width: '100%',
+    padding: '12px 12px 12px 44px',
+    backgroundColor: '#F9F9F9',
+    border: '1px solid #E0E0E0',
+    borderRadius: '4px',
+    color: '#000000',
     fontSize: '14px',
-    fontFamily: 'inherit',
-    outline: 'none'
+    outline: 'none',
+    transition: 'all 0.3s ease',
+    boxSizing: 'border-box',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
-  submitButton: {
+  loginButton: {
+    width: '100%',
     padding: '14px',
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#d4af37',
     color: '#000000',
     border: 'none',
     borderRadius: '4px',
+    fontSize: '16px',
     fontWeight: '600',
-    fontSize: '14px',
+    letterSpacing: '0.5px',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    marginTop: '10px'
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   errorBox: {
-    backgroundColor: '#3d2a1a',
-    border: '1px solid #D4AF37',
+    backgroundColor: '#FFEBEE',
+    border: '1px solid #EF5350',
     borderRadius: '4px',
     padding: '12px',
     marginBottom: '20px'
   },
   errorText: {
-    color: '#FFFFFF',
+    color: '#C62828',
     fontSize: '14px',
-    margin: '0'
+    margin: '0',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
-  bottomBar: {
-    height: '4px',
-    backgroundColor: '#D4AF37'
+  footer: {
+    textAlign: 'center',
+    fontSize: '12px',
+    color: '#999999',
+    margin: '0',
+    letterSpacing: '0.5px',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  },
+  accentTop: {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    right: '0',
+    height: '2px',
+    backgroundColor: '#d4af37'
+  },
+  accentBottom: {
+    position: 'absolute',
+    bottom: '0',
+    left: '0',
+    right: '0',
+    height: '2px',
+    backgroundColor: '#d4af37'
   }
 };

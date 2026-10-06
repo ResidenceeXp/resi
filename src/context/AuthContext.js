@@ -1,63 +1,137 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { auth, database } from '../firebaseConfig';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth';
-import { ref, set, get } from 'firebase/database';
+import { ref, get, set } from 'firebase/database';
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
+
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [displayName, setDisplayName] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Monitor auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
+    console.log('[AUTH] Setting up auth state listener');
+
+    let unsubscribe;
+
+    // Set persistence BEFORE setting up the listener
+    setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        console.log('[AUTH] Persistence configured successfully');
+        unsubscribe = setupAuthListener();
+      })
+      .catch((err) => {
+        console.error('[AUTH] Error setting persistence:', err);
+        // Still set up listener even if persistence fails
+        unsubscribe = setupAuthListener();
+      });
+
+    const setupAuthListener = () => {
+      return onAuthStateChanged(auth, async (currentUser) => {
         try {
-          const userRef = ref(database, `users/${currentUser.uid}`);
-          const snapshot = await get(userRef);
-          if (snapshot.exists()) {
-            setUserRole(snapshot.val().role || 'Agent');
+          console.log('[AUTH] Auth state changed:', currentUser ? currentUser.email : 'null');
+          if (currentUser) {
+            console.log('[AUTH] User authenticated, UID:', currentUser.uid);
+            setUser(currentUser);
+            // Fetch user role and displayName from database
+            try {
+              const userRef = ref(database, `users/${currentUser.uid}`);
+              const snapshot = await get(userRef);
+              if (snapshot.exists()) {
+                console.log('[AUTH] User data found in database');
+                setUserRole(snapshot.val().role);
+                setDisplayName(snapshot.val().displayName);
+              } else {
+                console.log('[AUTH] No user data found in database for UID:', currentUser.uid);
+              }
+            } catch (dbError) {
+              console.error('[AUTH] Error fetching user data from database:', dbError);
+              // Still keep user logged in even if database read fails
+              setUser(currentUser);
+            }
+          } else {
+            console.log('[AUTH] User not authenticated');
+            setUser(null);
+            setUserRole(null);
+            setDisplayName(null);
           }
         } catch (err) {
-          console.error('Error fetching user role:', err);
+          console.error('[AUTH] Auth state change error:', err);
+        } finally {
+          console.log('[AUTH] Setting loading to false');
+          setLoading(false);
         }
-      } else {
-        setUser(null);
-        setUserRole(null);
-      }
-      setLoading(false);
-    });
+      });
+    };
 
-    return () => unsubscribe();
+    // Handle Back-Forward Cache restoration
+    const handlePageShow = (event) => {
+      if (event.persisted) {
+        console.log('[AUTH] Page restored from Back-Forward Cache');
+        // Reinitialize auth listener after page restoration
+        if (unsubscribe) {
+          unsubscribe();
+        }
+        unsubscribe = setupAuthListener();
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+
+    // Return cleanup function
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const login = async (email, password) => {
-    setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      setError(null);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return userCredential.user;
     } catch (err) {
       setError(err.message);
       throw err;
     }
   };
 
-  const signup = async (email, password, displayName, role = 'Agent') => {
-    setError(null);
+  const signup = async (email, password, displayName, role) => {
     try {
+      setError(null);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await set(ref(database, `users/${userCredential.user.uid}`), {
+      const newUser = userCredential.user;
+
+      // Store user info in database
+      await set(ref(database, `users/${newUser.uid}`), {
         email,
         displayName,
-        role
+        role,
+        createdAt: new Date().toISOString()
       });
+
+      return newUser;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -65,9 +139,10 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    setError(null);
     try {
+      setError(null);
       await signOut(auth);
+      setUser(null);
       setUserRole(null);
     } catch (err) {
       setError(err.message);
@@ -75,13 +150,21 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const value = {
+    user,
+    userRole,
+    displayName,
+    loading,
+    error,
+    login,
+    signup,
+    logout,
+    isAuthenticated: !!user
+  };
+
   return (
-    <AuthContext.Provider value={{ user, userRole, loading, error, login, signup, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+};

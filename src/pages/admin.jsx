@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Plus } from 'lucide-react';
+import { getLogoBooleanTheme } from '../utils/themeUtils';
 
 export default function Admin() {
   const { signup, user } = useAuth();
   const navigate = useNavigate();
+  // Dark theme for admin (black background)
+  const isDarkTheme = true;
+  const logoSrc = getLogoBooleanTheme(isDarkTheme);
+
   const [formData, setFormData] = useState({
     displayName: '',
     email: '',
@@ -16,7 +21,14 @@ export default function Admin() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const roles = ['Agent', 'Transaction Coordinator', 'Assistant', 'Marketing Assistant', 'Marketing Manager'];
+  const roles = [
+    'Agent',
+    'Transaction Coordinator',
+    'Closing Concierge',
+    'Local Assistant',
+    'Marketing Manager',
+    'Marketing Assistant'
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,7 +51,7 @@ export default function Admin() {
 
       await signup(formData.email, formData.password, formData.displayName, formData.role);
 
-      setSuccess(\`User \${formData.displayName} created successfully!\`);
+      setSuccess(`User ${formData.displayName} created successfully!`);
       setFormData({
         displayName: '',
         email: '',
@@ -47,6 +59,7 @@ export default function Admin() {
         role: 'Agent'
       });
 
+      // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.message || 'Failed to create user');
@@ -59,9 +72,8 @@ export default function Admin() {
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <button onClick={() => navigate('/dashboard')} style={styles.backButton}>
-          <ArrowLeft size={20} />
-          Back to Dashboard
+        <button onClick={() => navigate('/dashboard')} style={styles.logoButton}>
+          <img src={logoSrc} alt="RESIDENCE | eXp Realty" style={styles.logo} />
         </button>
         <h1 style={styles.headerTitle}>User Management</h1>
       </div>
@@ -87,6 +99,7 @@ export default function Admin() {
               </div>
             )}
 
+            {/* Full Name */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Full Name</label>
               <input
@@ -100,6 +113,7 @@ export default function Admin() {
               />
             </div>
 
+            {/* Email */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Email Address</label>
               <input
@@ -113,6 +127,7 @@ export default function Admin() {
               />
             </div>
 
+            {/* Password */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Password</label>
               <input
@@ -127,6 +142,7 @@ export default function Admin() {
               />
             </div>
 
+            {/* Role */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Role</label>
               <select
@@ -155,6 +171,7 @@ export default function Admin() {
           </form>
         </div>
 
+        {/* Info Box */}
         <div style={styles.infoBox}>
           <h3 style={styles.infoTitle}>User Roles</h3>
           <ul style={styles.roleList}>
@@ -175,7 +192,8 @@ const styles = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#000000',
-    color: '#FFFFFF'
+    color: '#FFFFFF',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   header: {
     backgroundColor: '#1a1a1a',
@@ -185,25 +203,25 @@ const styles = {
     alignItems: 'center',
     gap: '20px'
   },
-  backButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
+  logoButton: {
     backgroundColor: 'transparent',
-    color: '#D4AF37',
-    border: '1px solid #D4AF37',
-    padding: '10px 16px',
-    borderRadius: '4px',
-    fontWeight: '600',
+    border: 'none',
     cursor: 'pointer',
-    fontSize: '14px',
-    transition: 'all 0.3s ease'
+    padding: '0',
+    display: 'flex',
+    alignItems: 'center'
+  },
+  logo: {
+    height: '40px',
+    width: 'auto',
+    maxWidth: '150px'
   },
   headerTitle: {
     fontSize: '24px',
     fontWeight: 'bold',
     margin: '0',
-    letterSpacing: '2px'
+    letterSpacing: '2px',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   mainContent: {
     padding: '40px',
@@ -227,7 +245,8 @@ const styles = {
     fontSize: '20px',
     fontWeight: '600',
     margin: '0',
-    color: '#D4AF37'
+    color: '#D4AF37',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   form: {
     display: 'flex',
@@ -244,7 +263,8 @@ const styles = {
     fontWeight: '600',
     color: '#D4AF37',
     letterSpacing: '0.5px',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   input: {
     padding: '12px',
@@ -253,7 +273,7 @@ const styles = {
     borderRadius: '4px',
     color: '#FFFFFF',
     fontSize: '14px',
-    fontFamily: 'inherit'
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   select: {
     padding: '12px',
@@ -262,7 +282,7 @@ const styles = {
     borderRadius: '4px',
     color: '#FFFFFF',
     fontSize: '14px',
-    fontFamily: 'inherit'
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   submitButton: {
     padding: '14px',
@@ -276,7 +296,8 @@ const styles = {
     transition: 'all 0.3s ease',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
-    marginTop: '10px'
+    marginTop: '10px',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   errorBox: {
     backgroundColor: '#3d2a1a',
@@ -288,7 +309,8 @@ const styles = {
   errorText: {
     color: '#FFFFFF',
     fontSize: '14px',
-    margin: '0'
+    margin: '0',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   successBox: {
     backgroundColor: '#1a3a1a',
@@ -301,7 +323,8 @@ const styles = {
     color: '#4CAF50',
     fontSize: '14px',
     margin: '0',
-    fontWeight: '600'
+    fontWeight: '600',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   infoBox: {
     backgroundColor: '#1a1a1a',
@@ -314,7 +337,8 @@ const styles = {
     fontSize: '16px',
     fontWeight: '600',
     margin: '0 0 16px 0',
-    color: '#D4AF37'
+    color: '#D4AF37',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   roleList: {
     listStyle: 'none',
@@ -325,11 +349,13 @@ const styles = {
     fontSize: '13px',
     color: '#999999',
     padding: '6px 0',
-    borderBottom: '1px solid #333333'
+    borderBottom: '1px solid #333333',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   },
   infoText: {
     fontSize: '12px',
     color: '#666666',
-    margin: '0'
+    margin: '0',
+    fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
   }
 };

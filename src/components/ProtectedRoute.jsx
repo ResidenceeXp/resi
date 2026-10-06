@@ -5,7 +5,10 @@ import { useAuth } from '../context/AuthContext';
 export default function ProtectedRoute({ children, requiredRole }) {
   const { user, userRole, loading } = useAuth();
 
+  console.log('[PROTECTED_ROUTE] Current state:', { loading, user: user ? user.email : null, userRole });
+
   if (loading) {
+    console.log('[PROTECTED_ROUTE] Still loading auth state');
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner}></div>
@@ -15,13 +18,16 @@ export default function ProtectedRoute({ children, requiredRole }) {
   }
 
   if (!user) {
+    console.log('[PROTECTED_ROUTE] No user found, redirecting to login');
     return <Navigate to="/" replace />;
   }
 
   if (requiredRole && userRole !== requiredRole) {
+    console.log('[PROTECTED_ROUTE] Role mismatch. Required:', requiredRole, 'Got:', userRole);
     return <Navigate to="/dashboard" replace />;
   }
 
+  console.log('[PROTECTED_ROUTE] Access granted for user:', user.email);
   return children;
 }
 
